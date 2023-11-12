@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  opc-plc:
+    image: mcr.microsoft.com/iotedge/opc-plc:latest
+    container_name: opc-plc
+    ports:
+      - "50000:50000"
+      - "8080:8080"
+    environment:
+      - LOGLEVEL=debug
+    command: ["--pn=50000", "--autoaccept", "--sph", "--sn=5", "--sr=10", "--st=uint", "--fn=5", "--fr=1", "--ft=uint", "--gn=5"]
+    networks:
+      - iot_network
+
+  node-red:
+    build:
+      context: ./node-red-service
+      dockerfile: Dockerfile
+    ports:
+      - "1880:1880"
+    depends_on:
+      - opc-plc
+    networks:
+      - iot_network
+
+networks:
+  iot_network:
+    driver: bridge
+
+volumes:
+  node-red-data:
